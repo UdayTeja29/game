@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Flag Clash Arena</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#050810;--s1:#0a0d16;--s2:#0e1220;--border:#152030;--cyan:#00d4ff;--green:#00ff88;--gold:#ffc93c;--red:#ff2244;--purple:#c44dff;--txt:#d8eeff;--muted:#2a4060}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;overflow:hidden}
+#bf{position:fixed;inset:0;background:rgba(196,77,255,.18);pointer-events:none;z-index:900;display:none}
+
+/* ── APP ── */
+#app{display:flex;flex-direction:column;width:1080px;height:1920px;position:relative;z-index:1}
+
+/* ── HEADER: 100px ── */
+#hdr{height:100px;flex-shrink:0;background:var(--s1);border-bottom:2px solid var(--border);display:grid;grid-template-columns:280px 1fr 280px;align-items:center;padding:0 28px;position:relative}
+#hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--green),var(--gold),transparent);opacity:.4}
+#hdLeft{display:flex;flex-direction:column;gap:6px}
+#liveRow{display:flex;align-items:center;gap:8px}
+.liveDot{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 12px var(--red);animation:lp 1.4s infinite}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.3}}
+.liveLabel{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--red);letter-spacing:3px}
+#socialBtns{display:flex;gap:8px}
+.socBtn{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:6px 14px;border-radius:20px;border:none;cursor:pointer;letter-spacing:1px;transition:transform .1s}
+.socBtn:active{transform:scale(.96)}
+.likeBtn{background:rgba(255,201,60,.15);border:1px solid rgba(255,201,60,.4);color:var(--gold)}
+.subBtn{background:rgba(255,34,68,.15);border:1px solid rgba(255,34,68,.4);color:var(--red)}
+#titleWrap{text-align:center}
+#mainTitle{font-family:'Bebas Neue',cursive;font-size:52px;letter-spacing:6px;background:linear-gradient(135deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+#mainSub{font-size:11px;color:var(--muted);letter-spacing:8px;text-transform:uppercase}
+#ytBadge{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;display:none;text-align:right;justify-self:end}
+#ytBadge.on{display:block;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:var(--green)}
+#ytBadge.off{display:block;background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.3);color:var(--red)}
+
+/* ── TOP INFO ROW: 260px ── */
+#infoRow{height:260px;flex-shrink:0;display:grid;grid-template-columns:240px 1fr 320px;border-bottom:2px solid var(--border)}
+
+/* Cat panel */
+#catPanel{background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px}
+#catCanvas{border-radius:10px}
+#hostBub{background:var(--s2);border:1px solid rgba(0,212,255,.2);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--cyan);font-style:italic;line-height:1.5;width:100%;text-align:center;position:relative;min-height:44px}
+#sDots{display:none;gap:3px;margin-left:4px;vertical-align:middle}
+.sd{width:5px;height:5px;border-radius:50%;background:var(--cyan);animation:sda 1s ease-in-out infinite;opacity:0;display:inline-block}
+.sd:nth-child(2){animation-delay:.2s}.sd:nth-child(3){animation-delay:.4s}
+@keyframes sda{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:1;transform:scale(1)}}
+
+/* Spotlight + join */
+#midPanel{background:var(--s2);border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;padding:18px 22px}
+.panelLabel{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+#spotRow{display:flex;align-items:center;gap:14px}
+#sImgWrap{width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid rgba(0,212,255,.3);flex-shrink:0;background:#0a1424;display:flex;align-items:center;justify-content:center;font-size:32px}
+#sImgWrap img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+#sName{font-size:20px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+#sCnt{font-size:13px;color:var(--muted);font-weight:600}
+#joinRow{display:flex;align-items:center;justify-content:space-between}
+#jLabel{font-size:13px;color:var(--muted);font-weight:600}
+#jLabel span{color:var(--green);font-family:'Bebas Neue',cursive;font-size:42px;display:block;line-height:1}
+#ctaText{font-size:12px;color:var(--gold);font-weight:700;line-height:1.6;text-align:right}
+
+/* Leaderboard panel */
+#lbPanel{background:var(--s1);padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+#lbTitle{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:2px}
+#lbTitle::after{content:'';flex:1;height:1px;background:rgba(255,201,60,.2)}
+.lbRow{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;border:1px solid transparent}
+.lbRow.r1{background:rgba(255,215,0,.04);border-color:rgba(255,215,0,.14)}
+.lbRow.r2{background:rgba(180,180,180,.02);border-color:rgba(192,192,192,.08)}
+.lbRow.r3{background:rgba(200,120,40,.02);border-color:rgba(205,127,50,.08)}
+.lbRank{font-family:'Bebas Neue',cursive;font-size:24px;width:26px;text-align:center;line-height:1}
+.r1 .lbRank{color:#ffd700}.r2 .lbRank{color:#b0b8c1}.r3 .lbRank{color:#cd7f32}
+.lbFlagImg{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,.1);flex-shrink:0}
+.lbFlagFb{font-size:26px;line-height:1;flex-shrink:0}
+.lbName{flex:1;font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.lbWins{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--gold)}
+
+/* ── PHASE BAR: 80px ── */
+#phaseBar{height:80px;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:18px}
+#phasePill{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;letter-spacing:3px;padding:8px 22px;border-radius:8px;text-transform:uppercase;border:1px solid rgba(0,255,136,.3);background:rgba(0,255,136,.07);color:var(--green);flex-shrink:0}
+#phasePill.battle{color:var(--red);border-color:rgba(255,34,68,.4);background:rgba(255,34,68,.08)}
+#phasePill.boss{color:var(--purple);border-color:rgba(196,77,255,.5);background:rgba(196,77,255,.1);animation:blnk .6s infinite}
+@keyframes blnk{0%,100%{opacity:1}50%{opacity:.2}}
+#timerTrack{flex:1;height:10px;background:rgba(255,255,255,.05);border-radius:5px;overflow:hidden}
+#timerFill{height:100%;border-radius:5px;transition:width .95s linear;background:linear-gradient(90deg,var(--cyan),var(--green))}
+#timerNum{font-family:'Bebas Neue',cursive;font-size:58px;color:var(--gold);min-width:66px;text-align:right;line-height:1}
+#timerNum.danger{color:var(--red);animation:td .4s infinite}
+@keyframes td{0%,100%{opacity:1}50%{opacity:.1}}
+#aliveCnt{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+#aliveCnt strong{font-family:'Bebas Neue',cursive;font-size:44px;color:var(--cyan);line-height:1}
+#aliveCnt span{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:2px;text-transform:uppercase}
+
+/* ── ARENA: flex 1 (takes remaining space) ── */
+#aWrap{flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse at center,#080c18 0%,var(--bg) 100%);min-height:0}
+#aC{position:absolute;inset:0;width:100%;height:100%}
+#puA{position:absolute;top:18px;left:50%;transform:translateX(-50%);background:rgba(255,201,60,.1);border:1px solid rgba(255,201,60,.4);border-radius:8px;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;padding:7px 22px;letter-spacing:2px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#puA.show{opacity:1}
+
+/* ── CTA BAR: 52px ── */
+#ctaBar{height:52px;flex-shrink:0;background:linear-gradient(90deg,rgba(0,212,255,.06),rgba(0,255,136,.05),rgba(0,212,255,.06));border-top:1px solid rgba(0,212,255,.12);display:flex;align-items:center;justify-content:center;overflow:hidden}
+#ctaScroll{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--cyan);letter-spacing:2px;white-space:nowrap;animation:scroll 22s linear infinite}
+@keyframes scroll{0%{transform:translateX(110%)}100%{transform:translateX(-110%)}}
+
+/* ── ELIMINATED: 248px fixed ── */
+#elimSection{height:248px;flex-shrink:0;background:var(--bg);padding:12px 24px 10px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+#elimTitle{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--red);text-transform:uppercase;display:flex;align-items:center;gap:10px;flex-shrink:0}
+#elimTitle::after{content:'';flex:1;height:1px;background:rgba(255,34,68,.18)}
+#eR{display:flex;flex-wrap:wrap;gap:7px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:var(--border) transparent;align-content:flex-start}
+.ei{display:flex;flex-direction:column;align-items:center;gap:3px;animation:eIn .35s ease-out}
+@keyframes eIn{from{transform:scale(0) rotate(-90deg);opacity:0}to{transform:scale(1);opacity:1}}
+.ef{width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,34,68,.2);background:rgba(255,34,68,.05);display:flex;align-items:center;justify-content:center;opacity:.75;flex-shrink:0}
+.ef img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.ef span{font-size:30px;line-height:1}
+.en{font-size:9px;color:var(--muted);white-space:nowrap;max-width:60px;overflow:hidden;text-overflow:ellipsis;text-align:center;font-weight:600}
+
+/* ── WINNER ── */
+#wO{position:fixed;inset:0;background:rgba(3,6,14,.92);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;z-index:500}
+#wO.show{display:flex}
+#wC{background:var(--s2);border:1px solid rgba(0,212,255,.2);border-radius:24px;padding:48px 56px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;width:86%;max-width:780px;animation:wPop .5s ease-out}
+@keyframes wPop{from{transform:scale(.3) rotate(-8deg);opacity:0}60%{transform:scale(1.04)}to{transform:scale(1);opacity:1}}
+#wTr{font-size:70px;animation:trSpin .6s ease-out}
+@keyframes trSpin{from{transform:rotate(-180deg) scale(0)}60%{transform:scale(1.3)}to{transform:scale(1)}}
+#wLabel{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:5px;color:var(--gold);text-transform:uppercase}
+#wFlagWrap{width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid rgba(0,212,255,.3);animation:wfPop .5s .1s both ease-out;flex-shrink:0}
+@keyframes wfPop{from{transform:scale(0) rotate(-180deg)}to{transform:scale(1)}}
+#wFlagWrap img{width:100%;height:100%;object-fit:cover}
+#wFlagFb{font-size:80px;line-height:1;animation:wfPop .5s .1s both ease-out}
+#wCo{font-family:'Bebas Neue',cursive;font-size:54px;letter-spacing:3px;color:var(--txt)}
+#wUsr{font-size:16px;color:var(--muted);font-weight:700}
+#wCards{display:flex;gap:12px;width:100%;margin-top:4px}
+.wCard{flex:1;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px 18px;text-align:left}
+.wCL{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:6px;text-transform:uppercase}
+.wCV{font-size:18px;font-weight:900;color:var(--txt)}
+#wTWn{font-family:'Bebas Neue',cursive;font-size:38px;color:var(--gold)}
+#wNx{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);letter-spacing:2px;padding:8px 26px;border:1px solid rgba(0,255,136,.22);border-radius:20px;background:rgba(0,255,136,.05);margin-top:4px}
+
+/* ── BOSS WARN ── */
+#bWrn{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:700;pointer-events:none}
+#bWrn.show{display:flex}
+#bWI{text-align:center;animation:bwPop .45s ease-out}
+@keyframes bwPop{from{transform:scale(.15);opacity:0}to{transform:scale(1);opacity:1}}
+#bWIc{font-size:120px}
+#bWT{font-family:'Bebas Neue',cursive;font-size:68px;letter-spacing:5px;color:var(--purple);text-shadow:0 0 60px var(--purple)}
+#bWS{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--red);letter-spacing:2px;margin-top:10px}
+
+/* ── SETUP ── */
+#ytSetup{position:fixed;inset:0;background:rgba(3,6,14,.98);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;z-index:1000}
+#ytBox{background:var(--s2);border:1px solid rgba(0,212,255,.18);border-radius:24px;padding:52px 56px;width:88%;max-width:820px;display:flex;flex-direction:column;gap:24px}
+.ytLogo{font-family:'Bebas Neue',cursive;font-size:58px;letter-spacing:5px;text-align:center;background:linear-gradient(135deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.ytTagline{font-size:15px;color:var(--muted);text-align:center;font-weight:600;line-height:1.7;margin-top:-12px}
+.ytField{display:flex;flex-direction:column;gap:8px}
+.ytLabel{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+.ytInput{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:16px 20px;color:var(--txt);font-family:'Inter',sans-serif;font-size:16px;outline:none;transition:border .2s;width:100%}
+.ytInput:focus{border-color:rgba(0,212,255,.4)}
+.ytInput::placeholder{color:var(--muted);font-size:14px}
+#ytStatus{font-family:'JetBrains Mono',monospace;font-size:12px;text-align:center;min-height:20px;font-weight:700;letter-spacing:1px}
+#ytStatus.ok{color:var(--green)}#ytStatus.err{color:var(--red)}#ytStatus.loading{color:var(--gold)}
+.ytBtns{display:flex;gap:12px}
+#ytConnectBtn{flex:1;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;letter-spacing:2px;padding:18px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--cyan),var(--green));color:#050810;text-transform:uppercase}
+#ytConnectBtn:disabled{opacity:.5;cursor:not-allowed}
+#ytSkipBtn{font-family:'JetBrains Mono',monospace;font-size:12px;padding:18px 26px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;text-transform:uppercase;letter-spacing:1px}
+#ytSkipBtn:hover{color:var(--txt);border-color:rgba(255,255,255,.2)}
+.ytHint{font-size:13px;color:var(--muted);line-height:1.85;background:rgba(0,212,255,.03);border:1px solid rgba(0,212,255,.09);border-radius:10px;padding:14px 20px}
+.ytHint b{color:var(--cyan)}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<div id="bf"></div>
+
+<!-- SETUP SCREEN -->
+<div id="ytSetup">
+  <div id="ytBox">
+    <div class="ytLogo">Flag Clash Arena</div>
+    <div class="ytTagline">Connect your YouTube live — viewers type their country to battle!</div>
+    <div class="ytField">
+      <div class="ytLabel">YouTube API Key</div>
+      <input class="ytInput" id="ytApiKey" placeholder="AIzaSy..." autocomplete="off" spellcheck="false"/>
+    </div>
+    <div class="ytField">
+      <div class="ytLabel">Live Stream Video ID or URL</div>
+      <input class="ytInput" id="ytVidInput" placeholder="Paste Video ID or full stream URL" autocomplete="off" spellcheck="false"/>
+    </div>
+    <div class="ytHint">
+      <b>Get API Key (free, 2 min):</b><br>
+      1. Go to <b>console.cloud.google.com</b> → Create project → Enable <b>YouTube Data API v3</b><br>
+      2. Credentials → Create API Key → paste above<br><br>
+      <b>Get Video ID:</b> Go live → copy from URL after <b>?v=</b> or after <b>/live/</b><br>
+      e.g. youtube.com/live/<b>kAsjQzXD1c8</b> → ID is <b>kAsjQzXD1c8</b><br><br>
+      ⚠️ <b>Stream must be LIVE before connecting.</b> Run via <b>python server.py</b> (not file://)
+    </div>
+    <div id="ytStatus"></div>
+    <div class="ytBtns">
+      <button id="ytConnectBtn" onclick="ytConnect()">⚡ Connect &amp; Start</button>
+      <button id="ytSkipBtn" onclick="ytSkip()">▶ Bots Only (Demo)</button>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="hdr">
+    <div id="hdLeft">
+      <div id="liveRow"><div class="liveDot"></div><div class="liveLabel">LIVE</div></div>
+      <div id="socialBtns">
+        <button class="socBtn likeBtn">👍 Like</button>
+        <button class="socBtn subBtn">🔔 Subscribe</button>
+      </div>
+    </div>
+    <div id="titleWrap">
+      <div id="mainTitle">Flag Clash Arena</div>
+      <div id="mainSub">World Battle Royale</div>
+    </div>
+    <div id="ytBadge"></div>
+  </div>
+
+  <!-- TOP INFO ROW -->
+  <div id="infoRow">
+
+    <!-- Cat mascot + host bubble -->
+    <div id="catPanel">
+      <canvas id="catCanvas" width="200" height="164"></canvas>
+      <div id="hostBub">
+        <span id="hTxt">Welcome to Flag Clash Arena!</span>
+        <span id="sDots"><span class="sd"></span><span class="sd"></span><span class="sd"></span></span>
+      </div>
+    </div>
+
+    <!-- Spotlight + join timer -->
+    <div id="midPanel">
+      <div>
+        <div class="panelLabel">Spotlight Player</div>
+        <div id="spotRow">
+          <div id="sImgWrap"><span id="sFlag">🏳️</span></div>
+          <div><div id="sName">Waiting...</div><div id="sCnt">— country —</div></div>
+        </div>
+      </div>
+      <div id="joinRow">
+        <div id="jLabel">
+          Joining closes in
+          <span id="jSec">60</span>
+        </div>
+        <div id="ctaText">Type your country<br>in the chat! 🔥</div>
+      </div>
+    </div>
+
+    <!-- TOP WINNERS leaderboard -->
+    <div id="lbPanel">
+      <div id="lbTitle">🏆 Top Winners</div>
+      <div id="lbList"></div>
+    </div>
+
+  </div>
+
+  <!-- PHASE BAR -->
+  <div id="phaseBar">
+    <div id="phasePill">Join Phase</div>
+    <div id="timerTrack"><div id="timerFill" style="width:100%"></div></div>
+    <div id="timerNum">60</div>
+    <div id="aliveCnt"><strong id="aCnt">0</strong><span>alive</span></div>
+  </div>
+
+  <!-- ARENA -->
+  <div id="aWrap">
+    <canvas id="aC"></canvas>
+    <div id="puA"></div>
+  </div>
+
+  <!-- CTA SCROLL -->
+  <div id="ctaBar">
+    <div id="ctaScroll">🔥 TYPE YOUR COUNTRY IN CHAT TO JOIN THE BATTLE! &nbsp;&nbsp; 🌍 56 NATIONS READY &nbsp;&nbsp; 🏆 LAST FLAG STANDING WINS! &nbsp;&nbsp; ⚡ EVERY 5TH ROUND BOSS APPEARS! &nbsp;&nbsp; 🔥 TYPE YOUR COUNTRY TO JOIN!</div>
+  </div>
+
+  <!-- ELIMINATED -->
+  <div id="elimSection">
+    <div id="elimTitle">💀 Eliminated Countries</div>
+    <div id="eR"></div>
+  </div>
+
+</div>
+
+<!-- WINNER OVERLAY -->
+<div id="wO">
+  <div id="wC">
+    <div id="wTr">🏆</div>
+    <div id="wLabel">Champion</div>
+    <div id="wFlagWrap"><img id="wFlagImg" src="" alt=""/></div>
+    <div id="wFlagFb" style="display:none"></div>
+    <div id="wCo"></div>
+    <div id="wUsr"></div>
+    <div id="wCards">
+      <div class="wCard"><div class="wCL">Won by</div><div class="wCV" id="wUsrCard"></div></div>
+      <div class="wCard" style="text-align:right"><div class="wCL">All-time leader</div><div class="wCV" id="wTNm"></div><div id="wTWn"></div></div>
+    </div>
+    <div id="wNx">Next match in <span id="wCd">4</span>s</div>
+  </div>
+</div>
+
+<!-- BOSS WARNING -->
+<div id="bWrn">
+  <div id="bWI">
+    <div id="bWIc">🦍</div>
+    <div id="bWT">BOSS ROUND!</div>
+    <div id="bWS">⚔️ ALL PLAYERS FIGHT THE BOSS TOGETHER!</div>
+  </div>
+</div>
+
+<script>
+// ── CDN & IMAGE CACHE ──
+const CDN='https://raw.githubusercontent.com/HatScripts/circle-flags/gh-pages/flags/';
+const IMGS={};
+function gImg(code){
+  if(!code)return null;
+  if(IMGS[code])return IMGS[code];
+  const img=new Image();img.crossOrigin='anonymous';
+  img.src=CDN+code+'.svg';
+  IMGS[code]=img;return img;
+}
+
+// ── COUNTRIES with flag codes ──
+const C=[
+  {n:"India",e:"🇮🇳",c:"in"},{n:"USA",e:"🇺🇸",c:"us"},{n:"Brazil",e:"🇧🇷",c:"br"},{n:"Indonesia",e:"🇮🇩",c:"id"},
+  {n:"Philippines",e:"🇵🇭",c:"ph"},{n:"Nepal",e:"🇳🇵",c:"np"},{n:"Pakistan",e:"🇵🇰",c:"pk"},{n:"UK",e:"🇬🇧",c:"gb"},
+  {n:"Bangladesh",e:"🇧🇩",c:"bd"},{n:"Nigeria",e:"🇳🇬",c:"ng"},{n:"Japan",e:"🇯🇵",c:"jp"},{n:"China",e:"🇨🇳",c:"cn"},
+  {n:"Germany",e:"🇩🇪",c:"de"},{n:"France",e:"🇫🇷",c:"fr"},{n:"Canada",e:"🇨🇦",c:"ca"},{n:"Australia",e:"🇦🇺",c:"au"},
+  {n:"Mexico",e:"🇲🇽",c:"mx"},{n:"Russia",e:"🇷🇺",c:"ru"},{n:"S.Korea",e:"🇰🇷",c:"kr"},{n:"Turkey",e:"🇹🇷",c:"tr"},
+  {n:"Egypt",e:"🇪🇬",c:"eg"},{n:"Ukraine",e:"🇺🇦",c:"ua"},{n:"Poland",e:"🇵🇱",c:"pl"},{n:"Sweden",e:"🇸🇪",c:"se"},
+  {n:"Argentina",e:"🇦🇷",c:"ar"},{n:"Colombia",e:"🇨🇴",c:"co"},{n:"Vietnam",e:"🇻🇳",c:"vn"},{n:"Thailand",e:"🇹🇭",c:"th"},
+  {n:"Malaysia",e:"🇲🇾",c:"my"},{n:"Italy",e:"🇮🇹",c:"it"},{n:"Spain",e:"🇪🇸",c:"es"},{n:"Ghana",e:"🇬🇭",c:"gh"},
+  {n:"Kenya",e:"🇰🇪",c:"ke"},{n:"Morocco",e:"🇲🇦",c:"ma"},{n:"S.Africa",e:"🇿🇦",c:"za"},{n:"Greece",e:"🇬🇷",c:"gr"},
+  {n:"Portugal",e:"🇵🇹",c:"pt"},{n:"Romania",e:"🇷🇴",c:"ro"},{n:"Denmark",e:"🇩🇰",c:"dk"},{n:"Norway",e:"🇳🇴",c:"no"},
+  {n:"Finland",e:"🇫🇮",c:"fi"},{n:"Ireland",e:"🇮🇪",c:"ie"},{n:"Jamaica",e:"🇯🇲",c:"jm"},{n:"Peru",e:"🇵🇪",c:"pe"},
+  {n:"Chile",e:"🇨🇱",c:"cl"},{n:"Venezuela",e:"🇻🇪",c:"ve"},{n:"Ethiopia",e:"🇪🇹",c:"et"},{n:"Iran",e:"🇮🇷",c:"ir"},
+  {n:"Croatia",e:"🇭🇷",c:"hr"},{n:"Serbia",e:"🇷🇸",c:"rs"},{n:"Hungary",e:"🇭🇺",c:"hu"},{n:"Bolivia",e:"🇧🇴",c:"bo"},
+  {n:"Mongolia",e:"🇲🇳",c:"mn"},{n:"Cambodia",e:"🇰🇭",c:"kh"},{n:"SriLanka",e:"🇱🇰",c:"lk"},{n:"NewZealand",e:"🇳🇿",c:"nz"},
+];
+// Pre-load all flags
+C.forEach(c=>gImg(c.c));
+
+// ── BOT NAME PARTS (combine for endless unique names) ──
+const BOT_PREFIX=["Rush","Storm","Drift","Shadow","Night","Pro","Quantum","Solar","Hex","Next",
+"Byte","Velo","Cyber","Zero","Frost","Live","Hyper","Flame","Iron","Ghost","Neon","Plasma",
+"Pixel","Wave","Turbo","Blitz","Nova","Omega","Echo","Sky","Rapid","Pulse","Ultra","Apex",
+"Blaze","Cryo","Dark","Edge","Fire","Gale","Haze","Ice","Jade","Kite","Lava","Mist","Nuke",
+"Orb","Peak","Quake","Rift","Snap","Tide","Urge","Volt","Wind","Xeno","Yolo","Zap","Ace",
+"Bold","Crit","Deep","Epic","Fast","Giga","High","Infi","Jump","King","Lit","Mega","Null"];
+const BOT_SUFFIX=["Craft","Pixel","King","Fx","Owl","Gamer","Jet","Spark","Runner","Frame",
+"Unit","X","Punk","Lag","Byte","Spa","View","Core","Bolt","Mode","Dash","Bit","Rush",
+"Gamer","Core","Mode","Star","Fire","Nova","High","Fire","Orbit","Force","Blade","Strike",
+"Wave","Seeker","Hunter","Hawk","Wolf","Bear","Lion","Tiger","Eagle","Shark","Viper","Fox"];
+
+// Track used names per round to avoid duplicates
+let usedBotNames=new Set();
+function mkBotName(){
+  let name,tries=0;
+  do{
+    // Include round number so same name can NEVER repeat across rounds
+    name=pick(BOT_PREFIX)+pick(BOT_SUFFIX)+'_R'+G.round+'_'+rndI(1,99);
+    tries++;
+  }while(usedBotNames.has(name)&&tries<30);
+  usedBotNames.add(name);
+  return name;
+}
+
+// Track which countries were used this round for variety
+let usedBotCountries=[];
+function mkBotCountry(){
+  // If we've used all countries, reset
+  if(usedBotCountries.length>=C.length) usedBotCountries=[];
+  // Pick a country not yet used this round
+  const unused=C.filter(c=>!usedBotCountries.includes(c.n));
+  const chosen=pick(unused.length>0?unused:C);
+  usedBotCountries.push(chosen.n);
+  return chosen;
+}
+
+const VL={
+  joining:"Welcome to Flag Clash Arena! Type your country in the chat right now to join the battle!",
+  welcomeSub:"Welcome everyone to the stream! If you're new here, smash that like button and subscribe to the channel! Let's get this battle started!",
+  likeSub:"Enjoying the battle? Don't forget to like the stream and subscribe to the channel for more! It really helps us out!",
+  battleStart:"Let the battle begin! Last flag standing wins!",
+  f10:"Ten players remaining! The fight is getting intense!",
+  f5:"Final five players! Who will survive?",
+  f3:"Only three left! The final battle is here!",
+  bossWarn:"All players! The Gorilla Boss has entered the arena! Work together to attack and defeat the boss! Punch it, hit it, fight back!",
+  bossWin:"The Gorilla Boss wins this round! Better luck next time!",
+  bossKilled:"Incredible! The players have defeated the Gorilla Boss! Amazing teamwork!",
+  shrink:"The arena is shrinking!",
+  winner:(n,c)=>`${c} wins! Congratulations to ${n}! Champion of Flag Clash Arena!`,
+  getReady:"Get ready! A new clash is about to begin!",
+};
+
+// ── CANVAS ──
+const canvas=document.getElementById('aC');
+const ctx=canvas.getContext('2d');
+let CX,CY,BR;
+function resize(){
+  const w=document.getElementById('aWrap');
+  canvas.width=w.clientWidth;canvas.height=w.clientHeight;
+  CX=canvas.width/2;CY=canvas.height/2;
+  BR=Math.min(canvas.width,canvas.height)*0.43;
+  if(!G.aR){G.aR=BR;G.tR=BR;}
+}
+window.addEventListener('resize',resize);
+
+// ── STATE ──
+const G={
+  phase:'idle',players:[],elim:[],falling:[],boss:null,pu:[],
+  round:1,timer:30,bTimer:40,isBoss:false,
+  bossCountdown:5,   // boss fires when this hits 0, then resets to 5
+  lb:{},id:0,aR:0,tR:0,shrink:false,
+  hA:-Math.PI/2,hW:0.22,
+  tIv:null,btIv:null,puIv:null,raf:null,
+  hQ:[],hTimeout:null,
+  said10:false,said5:false,said3:false,
+  welcomeDone:false,
+};
+const chatQueue=[];
+
+// ── VOICE ENGINE ──
+// Works in BlueStacks Chrome by force-loading voices and using a speech queue
+let isSpeakingWinner=false;
+let _voices=[];
+let _speechQueue=[];
+let _speaking=false;
+
+// Load voices — Android Chrome needs a small delay
+function _loadVoices(){
+  _voices=window.speechSynthesis?window.speechSynthesis.getVoices():[];
+}
+if(window.speechSynthesis){
+  window.speechSynthesis.onvoiceschanged=_loadVoices;
+  _loadVoices();
+  // BlueStacks needs a second attempt after page loads
+  setTimeout(_loadVoices,1000);
+  setTimeout(_loadVoices,3000);
+}
+
+function _pickVoice(){
+  if(!_voices.length)_loadVoices();
+  // Prefer female English
+  const pref=['Google UK English Female','Microsoft Zira','Samantha','Victoria','Karen','Moira','Google US English'];
+  for(const p of pref){const v=_voices.find(x=>x.name.includes(p));if(v)return v;}
+  const female=_voices.find(x=>x.lang.startsWith('en')&&x.name.toLowerCase().includes('female'));
+  if(female)return female;
+  return _voices.find(x=>x.lang.startsWith('en'))||_voices[0]||null;
+}
+
+function _doSpeak(text,rate,onEnd){
+  if(!window.speechSynthesis){if(onEnd)onEnd();return;}
+  // Android Chrome bug: cancel any stuck speech first
+  window.speechSynthesis.cancel();
+  setTimeout(()=>{
+    const u=new SpeechSynthesisUtterance(text);
+    const v=_pickVoice();if(v)u.voice=v;
+    u.rate=rate||1.0;u.pitch=1.1;u.volume=1.0;
+    u.onstart=()=>{_speaking=true;document.getElementById('sDots').style.display='inline-flex';};
+    u.onend=()=>{_speaking=false;document.getElementById('sDots').style.display='none';if(onEnd)onEnd();_drainQueue();};
+    u.onerror=()=>{_speaking=false;document.getElementById('sDots').style.display='none';if(onEnd)onEnd();_drainQueue();};
+    window.speechSynthesis.speak(u);
+
+    // BlueStacks workaround: resume if synthesis gets paused
+    const resumeHack=setInterval(()=>{
+      if(window.speechSynthesis.paused)window.speechSynthesis.resume();
+      if(!window.speechSynthesis.speaking)clearInterval(resumeHack);
+    },200);
+  },50);
+}
+
+function _drainQueue(){
+  if(_speaking||!_speechQueue.length)return;
+  const next=_speechQueue.shift();
+  _doSpeak(next.text,next.rate,next.onEnd);
+}
+
+function speak(t){
+  if(isSpeakingWinner)return;
+  _speechQueue=[];// clear pending, speak this now
+  if(_speaking){window.speechSynthesis&&window.speechSynthesis.cancel();_speaking=false;}
+  _doSpeak(t,1.0,null);
+}
+
+function speakWinner(t){
+  _speechQueue=[];
+  if(_speaking){window.speechSynthesis&&window.speechSynthesis.cancel();_speaking=false;}
+  isSpeakingWinner=true;
+  _doSpeak(t,0.95,()=>{isSpeakingWinner=false;});
+}
+
+function speakDirect(t,onDone){
+  _speechQueue=[];
+  if(_speaking){window.speechSynthesis&&window.speechSynthesis.cancel();_speaking=false;}
+  isSpeakingWinner=true;
+  _doSpeak(t,1.0,()=>{isSpeakingWinner=false;if(onDone)onDone();});
+}
+
+function setVoice(){}// no-op kept for safety
+
+function say(h,v){postHost(h);if(v)setTimeout(()=>speak(v),200);}
+
+const rnd=(a,b)=>Math.random()*(b-a)+a;
+const rndI=(a,b)=>Math.floor(rnd(a,b+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+// ── PLAYER ──
+function mkP(country,name,bot=true){
+  const a=rnd(0,Math.PI*2),d=rnd(20,G.aR*.6);
+  return{id:++G.id,name,country,bot,
+    x:CX+Math.cos(a)*d,y:CY+Math.sin(a)*d,
+    vx:rnd(-2.5,2.5),vy:rnd(-2.5,2.5),  // faster initial velocity
+    r:30,alive:true,glow:0,flash:0,pulse:0,
+    falling:false,fallVy:0,fallOp:1,fallRot:0};
+}
+function mkBoss(){
+  return{x:CX,y:CY,vx:rnd(-.8,.8),vy:rnd(-.8,.8),r:62,hp:100,maxHp:100,alive:true,pulse:0};
+}
+function inHole(a){
+  if(G.isBoss)return false;
+  let d=a-G.hA;
+  while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;
+  return Math.abs(d)<G.hW+0.06;
+}
+
+// ── PHASES ──
+function startJoin(){
+  G.phase='joining';G.players=[];G.elim=[];G.falling=[];
+  G.boss=null;G.pu=[];G.shrink=false;G.aR=BR;G.tR=BR;G.timer=30;G.isBoss=false;
+  G.said10=G.said5=G.said3=false;
+
+  // Reset bot uniqueness tracking each round — fresh names every time
+  usedBotNames=new Set();
+  usedBotCountries=[];
+
+  clearIvs();
+  document.getElementById('eR').innerHTML='';
+  document.getElementById('wO').classList.remove('show');
+  document.getElementById('bWrn').classList.remove('show');
+  setBadge('join','Join Phase');setTimer(30,'join');
+  document.getElementById('jSec').textContent=30;
+  document.getElementById('jLabel').style.opacity=1;
+  setSpot(null);
+
+  // Welcome message: first round only, then every 10 rounds
+  const isWelcomeRound = (G.round===1)||(G.round%10===0);
+  if(isWelcomeRound){
+    say('👋 Welcome to the stream! Like & Subscribe! 🔔',VL.welcomeSub);
+    setTimeout(()=>{if(G.phase==='joining')speak(VL.joining);},6500);
+  } else {
+    say('🎮 Joining phase started!',VL.getReady);
+    setTimeout(()=>{if(G.phase==='joining')speak(VL.joining);},2500);
+  }
+
+  // Flush queued real viewers first
+  setTimeout(()=>{if(G.phase==='joining')flushQ();},400);
+
+  // DO NOT pre-spawn bots here — only fill up to 10 at battle start if needed
+  // This prevents bot spam during join phase
+
+  clearInterval(G.tIv);
+  G.tIv=setInterval(()=>{
+    G.timer--;setTimer(G.timer,'join');document.getElementById('jSec').textContent=G.timer;
+    if(G.timer<=0){clearInterval(G.tIv);closeBattle();}
+  },1000);
+  startRaf();
+}
+
+function flushQ(){
+  while(chatQueue.length&&G.players.length<60){
+    const{username,country}=chatQueue.shift();
+    if(!G.players.find(p=>p.name.toLowerCase()===username.toLowerCase()))
+      G.players.push(mkP(country,username,false));
+  }
+  chatQueue.length=0;updA();
+}
+
+function closeBattle(){
+  // Boss check: count down, fire boss every 5 rounds exactly
+  G.bossCountdown--;
+  G.isBoss=(G.bossCountdown<=0);
+  if(G.isBoss) G.bossCountdown=5; // reset for next cycle
+
+  // Fill with bots ONLY if fewer than 10 real+bot players — max 10 total
+  const realPlayers=G.players.length;
+  if(realPlayers<10){
+    const needed=10-realPlayers;
+    for(let i=0;i<needed;i++){
+      G.players.push(mkP(mkBotCountry(),mkBotName()));
+    }
+    updA();
+  }
+  // Never add more than what's needed — hard cap at 10 bots total if no real viewers
+  // (real viewers can always join and exceed 10)
+
+  if(G.isBoss)showBossWarn(doBattle);else doBattle();
+}
+
+function doBattle(){
+  G.phase='battle';G.timer=60;
+  document.getElementById('jLabel').style.opacity=0;
+  if(G.isBoss){
+    setBadge('boss','Boss Round');G.boss=mkBoss();G.bTimer=40;
+    say('⚠️ Gorilla Boss enters! Attack it!',VL.bossWarn);startBTimer();
+  } else {
+    setBadge('battle','Battle!');
+    say('⚔️ Battle begins!',VL.battleStart);startBattleTimer();
+  }
+  clearInterval(G.puIv);
+  G.puIv=setInterval(()=>{if(G.players.filter(p=>p.alive).length>1)spawnPU();},7500);
+}
+
+function startBattleTimer(){
+  clearInterval(G.tIv);G.timer=60;setTimer(60,'battle');
+  G.tIv=setInterval(()=>{
+    G.timer--;setTimer(G.timer,'battle');
+    const alive=G.players.filter(p=>p.alive&&!p.falling);
+
+    // 45s mark: like & subscribe reminder
+    if(G.timer===45){
+      say('👍 Enjoying the show? Like & Subscribe! 🔔',VL.likeSub);
+    }
+
+    // 30s mark: start shrinking
+    if(G.timer===30){
+      G.shrink=true;
+      G.tR=BR*0.22;   // target: very small arena
+      postHost('⚠️ Arena is shrinking!');
+    }
+
+    if(!G.said10&&alive.length<=10&&alive.length>0){G.said10=true;say('10 remaining! ⚔️',VL.f10);}
+    if(!G.said5&&alive.length<=5&&alive.length>0){G.said5=true;say('FINAL 5! 🔥',VL.f5);}
+    if(!G.said3&&alive.length<=3&&alive.length>0){G.said3=true;say('TOP 3! 🏆',VL.f3);}
+    if(alive.length<=1||G.timer<=0){clearInterval(G.tIv);endRound(alive[0]||null);}
+  },1000);
+}
+
+function startBTimer(){
+  clearInterval(G.btIv);G.bTimer=40;setTimer(40,'boss');
+  G.btIv=setInterval(()=>{
+    G.bTimer--;setTimer(G.bTimer,'boss');
+    const alive=G.players.filter(p=>p.alive&&!p.falling);
+    if(alive.length===0){clearIvs();endRound(null,true);return;}
+    if(!G.boss||!G.boss.alive){
+      clearIvs();
+      const survivors=G.players.filter(p=>p.alive&&!p.falling);
+      const count=survivors.length;
+      const names=survivors.slice(0,3).map(p=>p.name.replace(/\d+$/,'').trim()||p.name).join(', ');
+      const extra=count>3?` and ${count-3} more`:'';
+      postHost(`💥 Boss defeated! All ${count} survivors WIN! 🎉 ${names}${extra}`);
+      const bossDefeatedLine=`The Gorilla Boss has been defeated! All ${count} surviving players win! Amazing teamwork everyone!`;
+      speakDirect(bossDefeatedLine);
+      setTimeout(nextRound,6000);
+      return;
+    }
+    if(G.bTimer<=0){clearIvs();endRound(null,true);}
+  },1000);
+}
+
+function endRound(winner,bossWon=false){
+  G.phase='result';clearIvs();
+
+  if(bossWon){
+    postHost('😱 Boss wins this round!');
+    setTimeout(()=>speak(VL.bossWin),100);
+    setTimeout(nextRound,5000);
+    return;
+  }
+  if(!winner){setTimeout(nextRound,3000);return;}
+
+  // Only count wins for real viewers, never bots
+  if(!winner.bot){
+    const key=winner.name.toLowerCase();
+    if(!G.lb[key])G.lb[key]={c:winner.country,player:winner.name,w:0};
+    G.lb[key].w++;
+    updLB();
+  }
+
+  // Show on screen immediately
+  postHost(`🏆 ${winner.country.e} ${winner.name} (${winner.country.n}) is CHAMPION!`);
+  setSpot(winner);
+
+  // Speak winner name only
+  const spokenName=winner.name.replace(/\d+$/,'').trim()||winner.name;
+  const voiceLine=`${spokenName} wins! Congratulations ${spokenName}! You are the champion!`;
+  speakWinner(voiceLine);
+
+  // Show winner card after a tiny delay
+  setTimeout(()=>showWinner(winner), 400);
+}
+function nextRound(){
+  G.round++;
+  // Track rounds clearly for boss: boss at round 5, 10, 15, 20...
+  // G.round is already the NEW round number when closeBattle runs
+  startJoin();
+}
+
+// ── PHYSICS ──
+function phys(){
+  if(G.phase!=='joining'&&G.phase!=='battle'&&G.phase!=='boss')return;
+  const alive=G.players.filter(p=>p.alive&&!p.falling);
+
+  // Speed: faster base, scales up as arena shrinks for more chaos
+  const shrinkR=G.aR>0?(BR/G.aR):1;
+  const spd=Math.min(4.8, 2.6*shrinkR);  // faster than before
+
+  // Shrink: 0.55px per frame = visibly shrinks every second (~33px/sec at 60fps)
+  if(G.shrink&&G.aR>G.tR) G.aR-=0.55;
+
+  G.falling=G.falling.filter(p=>{
+    p.fallVy+=0.6;p.y+=p.fallVy;p.x+=p.vx*.18;
+    p.fallRot+=0.07;p.fallOp-=0.011;
+    return p.fallOp>0;
+  });
+
+  alive.forEach(p=>{
+    p.glow=Math.max(0,p.glow-.05);p.flash=Math.max(0,p.flash-1);p.pulse+=.05;
+    const ms=spd+rnd(-.15,.15);
+    p.vx+=rnd(-.18,.18);p.vy+=rnd(-.18,.18);  // more jitter = livelier
+    const s=Math.hypot(p.vx,p.vy);if(s>ms){p.vx=p.vx/s*ms;p.vy=p.vy/s*ms;}
+    p.x+=p.vx;p.y+=p.vy;
+    const dx=p.x-CX,dy=p.y-CY,d=Math.hypot(dx,dy),maxD=G.aR-p.r;
+    if(d>maxD){
+      const ang=Math.atan2(dy,dx);
+      if(inHole(ang)){eject(p);}
+      else{const nx=dx/d,ny=dy/d;p.x=CX+nx*maxD;p.y=CY+ny*maxD;const dot=p.vx*nx+p.vy*ny;p.vx-=2*dot*nx;p.vy-=2*dot*ny;}
+    }
+  });
+
+  for(let i=0;i<alive.length;i++){
+    for(let j=i+1;j<alive.length;j++){
+      const a=alive[i],b=alive[j];
+      const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),md=a.r+b.r;
+      if(d<md&&d>.01){
+        const nx=dx/d,ny=dy/d;
+        const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
+        if(rv<0){const imp=rv*.9;a.vx+=nx*imp;a.vy+=ny*imp;b.vx-=nx*imp;b.vy-=ny*imp;}
+        const ov=md-d;a.x-=nx*ov*.5;a.y-=ny*ov*.5;b.x+=nx*ov*.5;b.y+=ny*ov*.5;
+        a.glow=Math.min(1,a.glow+.5);b.glow=Math.min(1,b.glow+.5);
+      }
+    }
+  }
+
+  if(G.boss&&G.boss.alive){
+    const boss=G.boss;boss.pulse+=.06;
+    boss.vx+=rnd(-.07,.07);boss.vy+=rnd(-.07,.07);
+    const bs=Math.hypot(boss.vx,boss.vy);if(bs>.7){boss.vx=boss.vx/bs*.7;boss.vy=boss.vy/bs*.7;}
+    boss.x+=boss.vx;boss.y+=boss.vy;
+    const bdx=boss.x-CX,bdy=boss.y-CY,bd=Math.hypot(bdx,bdy),bm=G.aR-boss.r-5;
+    if(bd>bm){const bn=bdx/bd,bny=bdy/bd;boss.x=CX+bn*bm;boss.y=CY+bny*bm;const bdot=boss.vx*bn+boss.vy*bny;boss.vx-=2*bdot*bn;boss.vy-=2*bdot*bny;}
+    alive.forEach(p=>{
+      const pd=Math.hypot(boss.x-p.x,boss.y-p.y);
+      if(pd<boss.r+p.r){
+        boss.hp-=2.2;p.flash=7;p.glow=1;
+        const nx=(p.x-boss.x)/pd,ny=(p.y-boss.y)/pd;
+        p.vx+=nx*3.5;p.vy+=ny*3.5;
+        if(boss.hp<=0)boss.alive=false;
+        doFlash();
+      }
+    });
+  }
+
+  G.pu=G.pu.filter(pu=>{
+    pu.life--;pu.pulse+=.1;if(pu.life<=0)return false;
+    for(const p of alive){if(Math.hypot(p.x-pu.x,p.y-pu.y)<p.r+pu.r){applyPU(p,pu);return false;}}
+    return true;
+  });
+
+  updA();
+  const al=G.players.filter(p=>p.alive&&!p.falling);
+  if(al.length>0)setSpot(al[0]);
+  if(G.phase==='battle'&&al.length<=1){clearIvs();setTimeout(()=>endRound(al[0]||null),800);}
+}
+
+function eject(p){
+  if(!p.alive||p.falling)return;
+  p.alive=false;p.falling=true;p.fallVy=rnd(-2,2);p.fallOp=1;p.fallRot=0;
+  p.y=CY-G.aR-p.r+5;
+  G.falling.push(p);G.elim.push(p);addElimUI(p);
+  beep(200,.2,'sawtooth',.08);updA();
+  const alive=G.players.filter(q=>q.alive&&!q.falling);
+  if(!G.said10&&alive.length<=10){G.said10=true;setTimeout(()=>say('10 remaining! ⚔️',VL.f10),300);}
+  if(!G.said5&&alive.length<=5){G.said5=true;setTimeout(()=>say('Final 5! 🔥',VL.f5),300);}
+  if(!G.said3&&alive.length<=3){G.said3=true;setTimeout(()=>say('Only 3 left! 🏆',VL.f3),300);}
+}
+
+const PUT=[{t:'speed',e:'⚡',col:'#ffc93c',lbl:'⚡ SPEED BOOST!'},{t:'small',e:'🔻',col:'#00ff88',lbl:'🔻 SHRINK!'}];
+function spawnPU(){
+  if(G.pu.length>=3)return;
+  const a=rnd(0,Math.PI*2),d=rnd(40,G.aR*.58),def=pick(PUT);
+  G.pu.push({...def,x:CX+Math.cos(a)*d,y:CY+Math.sin(a)*d,r:16,life:280,pulse:0});
+}
+function applyPU(p,pu){
+  showPUA(pu.lbl);beep(660,.08,'sine',.08);
+  if(pu.t==='speed'){p.vx*=1.8;p.vy*=1.8;}
+  if(pu.t==='small')p.r=Math.max(14,p.r-5);
+}
+
+// ── RENDER ──
+function startRaf(){
+  cancelAnimationFrame(G.raf);
+  (function loop(){G.raf=requestAnimationFrame(loop);phys();draw();})();
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,canvas.width,canvas.height);
+  const grd=ctx.createRadialGradient(CX,CY,0,CX,CY,G.aR*1.4);
+  grd.addColorStop(0,'rgba(0,212,255,.03)');grd.addColorStop(1,'transparent');
+  ctx.fillStyle=grd;ctx.fillRect(0,0,canvas.width,canvas.height);
+  drawArena();drawPUs();
+  if(G.boss&&G.boss.alive)drawBoss();
+  G.players.forEach(p=>{if(p.alive&&!p.falling)drawP(p);});
+  drawFalling();
+}
+
+function drawArena(){
+  const r=G.aR,now=Date.now()/1000,ib=G.phase==='boss';
+  const rc=ib?'#c44dff':'#00d4ff';
+  const hs=G.hA-G.hW,he=G.hA+G.hW;
+  ctx.save();
+  // Fill
+  ctx.beginPath();ctx.arc(CX,CY,r,0,Math.PI*2);
+  const fill=ctx.createRadialGradient(CX,CY,0,CX,CY,r);
+  fill.addColorStop(0,ib?'#0f0820':'#07080f');fill.addColorStop(1,ib?'#06030e':'#030508');
+  ctx.fillStyle=fill;ctx.fill();
+  // Grid
+  ctx.globalAlpha=.04;ctx.strokeStyle=rc;ctx.lineWidth=1;
+  for(let i=1;i<=3;i++){ctx.beginPath();ctx.arc(CX,CY,r*i/3,0,Math.PI*2);ctx.stroke();}
+  ctx.globalAlpha=.02;
+  [[CX-r,CY,CX+r,CY],[CX,CY-r,CX,CY+r]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});
+  ctx.globalAlpha=1;
+  // Spinning dashes
+  ctx.save();ctx.translate(CX,CY);ctx.rotate(now*.28);
+  ctx.beginPath();ctx.arc(0,0,r+16,he+.2,hs-.2+Math.PI*2);
+  ctx.setLineDash([20,14]);ctx.strokeStyle=ib?'rgba(196,77,255,.3)':'rgba(0,212,255,.25)';ctx.lineWidth=3.5;ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  // Main ring with hole
+  ctx.lineWidth=4;ctx.shadowColor=rc;ctx.shadowBlur=28;ctx.strokeStyle=rc;
+  ctx.beginPath();ctx.arc(CX,CY,r,he+.08,hs-.08+Math.PI*2);ctx.stroke();
+  ctx.lineWidth=1.5;ctx.shadowBlur=8;ctx.strokeStyle=ib?'rgba(196,77,255,.6)':'rgba(0,255,136,.5)';
+  ctx.beginPath();ctx.arc(CX,CY,r-7,he+.08,hs-.08+Math.PI*2);ctx.stroke();ctx.shadowBlur=0;
+  // Hole
+  const hx1=CX+Math.cos(hs)*r,hy1=CY+Math.sin(hs)*r;
+  const hx2=CX+Math.cos(he)*r,hy2=CY+Math.sin(he)*r;
+  if(!G.isBoss){
+    ctx.shadowColor='#00ff88';ctx.shadowBlur=22;ctx.fillStyle='#00ff88';
+    ctx.beginPath();ctx.arc(hx1,hy1,7,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(hx2,hy2,7,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.moveTo(hx1,hy1);ctx.lineTo(hx2,hy2);
+    ctx.strokeStyle='rgba(0,255,136,.14)';ctx.lineWidth=20;ctx.stroke();
+    ctx.strokeStyle='rgba(0,255,136,.7)';ctx.lineWidth=2.5;ctx.stroke();
+    const hmX=CX+Math.cos(G.hA)*(r+36),hmY=CY+Math.sin(G.hA)*(r+36);
+    ctx.font='bold 14px "JetBrains Mono",monospace';ctx.fillStyle='rgba(0,255,136,.85)';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('EXIT',hmX,hmY);
+  } else {
+    ctx.shadowColor='#ff2244';ctx.shadowBlur=22;ctx.fillStyle='#ff2244';
+    ctx.beginPath();ctx.arc(hx1,hy1,7,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(hx2,hy2,7,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.moveTo(hx1,hy1);ctx.lineTo(hx2,hy2);
+    ctx.strokeStyle='rgba(255,34,68,.25)';ctx.lineWidth=20;ctx.stroke();
+    ctx.strokeStyle='rgba(255,34,68,.75)';ctx.lineWidth=2.5;ctx.stroke();
+    const hmX=CX+Math.cos(G.hA)*(r+36),hmY=CY+Math.sin(G.hA)*(r+36);
+    ctx.font='bold 14px "JetBrains Mono",monospace';ctx.fillStyle='rgba(255,34,68,.9)';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🔒 SEALED',hmX,hmY);
+  }
+  if(G.shrink){const pv=.28+.28*Math.sin(now*5);ctx.beginPath();ctx.arc(CX,CY,r,0,Math.PI*2);ctx.strokeStyle=`rgba(255,34,68,${pv})`;ctx.lineWidth=7;ctx.stroke();}
+  ctx.restore();
+}
+
+function drawP(p){
+  const{x,y,r,glow,flash}=p;
+  const img=gImg(p.country.c);
+  ctx.save();
+  if(glow>.05){
+    ctx.beginPath();ctx.arc(x,y,r+8,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(0,212,255,${glow*.6})`;ctx.lineWidth=2;
+    ctx.shadowColor='#00d4ff';ctx.shadowBlur=16;ctx.stroke();ctx.shadowBlur=0;
+  }
+  if(flash>0){
+    ctx.beginPath();ctx.arc(x,y,r+5,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,34,68,${flash/10*.3})`;ctx.fill();
+  }
+  // Background circle
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle='#0a1424';ctx.shadowColor='#00d4ff';ctx.shadowBlur=6;ctx.fill();
+  ctx.strokeStyle='rgba(0,212,255,.5)';ctx.lineWidth=2;ctx.stroke();ctx.shadowBlur=0;
+  // Real flag image clipped to circle
+  ctx.save();
+  ctx.beginPath();ctx.arc(x,y,r-1.5,0,Math.PI*2);ctx.clip();
+  if(img&&img.complete&&img.naturalWidth>0){
+    ctx.drawImage(img,x-(r-1.5),y-(r-1.5),(r-1.5)*2,(r-1.5)*2);
+  } else {
+    ctx.font=`${Math.floor(r*1.05)}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#fff';ctx.fillText(p.country.e,x,y+1);
+  }
+  ctx.restore();
+  // Username label — bigger and clearer
+  ctx.font=`700 14px 'Inter',sans-serif`;ctx.textAlign='center';ctx.textBaseline='bottom';
+  ctx.fillStyle='rgba(216,238,255,.98)';ctx.shadowColor='rgba(0,0,0,1)';ctx.shadowBlur=7;
+  ctx.fillText(p.name.length>12?p.name.slice(0,11)+'…':p.name,x,y-r-3);ctx.shadowBlur=0;
+  ctx.restore();
+}
+
+function drawFalling(){
+  G.falling.forEach(p=>{
+    if(p.fallOp<=0)return;
+    const img=gImg(p.country.c);
+    ctx.save();ctx.globalAlpha=p.fallOp;
+    ctx.translate(p.x,p.y);ctx.rotate(p.fallRot);
+    ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);
+    ctx.fillStyle='#0a1424';ctx.fill();
+    ctx.strokeStyle='rgba(255,34,68,.45)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.save();
+    ctx.beginPath();ctx.arc(0,0,p.r-1.5,0,Math.PI*2);ctx.clip();
+    if(img&&img.complete&&img.naturalWidth>0){
+      ctx.drawImage(img,-(p.r-1.5),-(p.r-1.5),(p.r-1.5)*2,(p.r-1.5)*2);
+    } else {
+      ctx.font=`${Math.floor(p.r)}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(p.country.e,0,1);
+    }
+    ctx.restore();ctx.restore();
+  });
+}
+
+function drawBoss(){
+  const boss=G.boss,{x,y,r,pulse}=boss,pv=.5+.5*Math.sin(pulse);
+  ctx.save();
+  ctx.beginPath();ctx.arc(x,y,r+22+pv*10,0,Math.PI*2);
+  ctx.strokeStyle=`rgba(196,77,255,${.18+pv*.32})`;ctx.lineWidth=4;ctx.shadowColor='#c44dff';ctx.shadowBlur=36;ctx.stroke();
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+  const bg=ctx.createRadialGradient(x,y,0,x,y,r);bg.addColorStop(0,'#1e0835');bg.addColorStop(1,'#0e021a');
+  ctx.fillStyle=bg;ctx.shadowColor='#c44dff';ctx.shadowBlur=22;ctx.fill();
+  ctx.strokeStyle=`rgba(196,77,255,${.55+pv*.4})`;ctx.lineWidth=3;ctx.stroke();ctx.shadowBlur=0;
+  ctx.font=`${Math.floor(r*.88)}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🦍',x,y+2);
+  ctx.font='28px serif';ctx.fillText('👑',x,y-r-10);
+  ctx.font='bold 13px "JetBrains Mono",monospace';ctx.fillStyle='#c44dff';ctx.shadowColor='#c44dff';ctx.shadowBlur=12;ctx.fillText('BOSS',x,y+r+20);
+  const bw=r*2,bh=10,bx=x-bw/2,by=y+r+28;ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(bx,by,bw,bh);
+  ctx.fillStyle=`hsl(${Math.max(0,boss.hp)/boss.maxHp*120},85%,50%)`;
+  ctx.fillRect(bx,by,bw*Math.max(0,boss.hp/boss.maxHp),bh);
+  ctx.font='bold 11px "JetBrains Mono",monospace';ctx.fillStyle='rgba(220,200,255,.9)';ctx.textAlign='center';
+  ctx.fillText(`${Math.round(Math.max(0,boss.hp))} HP`,x,by+bh+16);
+  ctx.restore();
+}
+
+function drawPUs(){
+  G.pu.forEach(pu=>{
+    const pv=.5+.5*Math.sin(pu.pulse);ctx.save();
+    ctx.beginPath();ctx.arc(pu.x,pu.y,pu.r,0,Math.PI*2);ctx.strokeStyle=pu.col;ctx.lineWidth=2;
+    ctx.shadowColor=pu.col;ctx.shadowBlur=12+pv*10;ctx.globalAlpha=.55+pv*.45;ctx.stroke();
+    ctx.font='20px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowBlur=0;ctx.fillText(pu.e,pu.x,pu.y);
+    ctx.restore();
+  });
+}
+
+// ── CAT MASCOT ──
+const catCv=document.getElementById('catCanvas');
+const cctx=catCv.getContext('2d');
+let catF=0;
+function drawCat(){
+  cctx.clearRect(0,0,200,164);const t=catF++/30;
+  cctx.fillStyle='#1a2a3a';cctx.fillRect(0,120,200,44);
+  cctx.fillStyle='#0d1e30';cctx.fillRect(8,110,184,14);
+  cctx.fillStyle='#091420';cctx.fillRect(30,103,140,16);
+  for(let k=0;k<10;k++){cctx.fillStyle=k%2===0?'#1e3a5f':'#162d48';cctx.fillRect(34+k*12,106,10,9);}
+  [[14,22,72,82],[114,22,72,82]].forEach(([mx,my,mw,mh])=>{
+    cctx.fillStyle='rgba(0,180,255,.14)';cctx.fillRect(mx,my,mw,mh);
+    cctx.strokeStyle='rgba(0,200,255,.4)';cctx.lineWidth=1.5;cctx.strokeRect(mx,my,mw,mh);
+  });
+  cctx.fillStyle='#00c8ff';
+  [[18,36,26,3],[18,45,34,2],[18,52,22,2],[118,34,30,3],[118,43,38,2],[118,50,28,2]].forEach(([x,y,w,h])=>cctx.fillRect(x,y,w,h));
+  const by=Math.sin(t*2.5)*2.5;
+  cctx.fillStyle='#f5deb3';
+  cctx.beginPath();cctx.ellipse(100,84+by,26,30,0,0,Math.PI*2);cctx.fill();
+  cctx.beginPath();cctx.arc(100,56+by,24,0,Math.PI*2);cctx.fill();
+  cctx.fillStyle='#e8c99a';
+  [[82,40,76,24,94,38],[118,40,124,24,106,38]].forEach(([x1,y1,x2,y2,x3,y3])=>{
+    cctx.beginPath();cctx.moveTo(x1,y1+by);cctx.lineTo(x2,y2+by);cctx.lineTo(x3,y3+by);cctx.fill();
+  });
+  cctx.fillStyle='#ff9aaa';
+  [[84,38,80,28,92,38],[116,38,120,28,108,38]].forEach(([x1,y1,x2,y2,x3,y3])=>{
+    cctx.beginPath();cctx.moveTo(x1,y1+by);cctx.lineTo(x2,y2+by);cctx.lineTo(x3,y3+by);cctx.fill();
+  });
+  const bl=(catF%90)<4;cctx.fillStyle='#222';
+  if(bl){cctx.fillRect(87,54+by,14,3);cctx.fillRect(108,54+by,14,3);}
+  else{
+    cctx.beginPath();cctx.arc(93,54+by,7,0,Math.PI*2);cctx.fill();
+    cctx.beginPath();cctx.arc(114,54+by,7,0,Math.PI*2);cctx.fill();
+    cctx.fillStyle='#fff';
+    cctx.beginPath();cctx.arc(96,51+by,2.8,0,Math.PI*2);cctx.fill();
+    cctx.beginPath();cctx.arc(117,51+by,2.8,0,Math.PI*2);cctx.fill();
+  }
+  cctx.fillStyle='#ff9aaa';cctx.beginPath();cctx.arc(100,62+by,3.5,0,Math.PI*2);cctx.fill();
+  cctx.strokeStyle='rgba(160,160,160,.5)';cctx.lineWidth=.8;
+  [[74,60,98,62],[72,65,98,65],[74,70,98,68],[126,60,102,62],[128,65,102,65],[126,70,102,68]].forEach(([x1,y1,x2,y2])=>{
+    cctx.beginPath();cctx.moveTo(x1,y1+by);cctx.lineTo(x2,y2+by);cctx.stroke();
+  });
+  const tp=Math.sin(t*8)>0;cctx.fillStyle='#f5deb3';
+  cctx.beginPath();cctx.ellipse(80,tp?101:105,10,7,-.3,0,Math.PI*2);cctx.fill();
+  cctx.beginPath();cctx.ellipse(120,tp?105:101,10,7,.3,0,Math.PI*2);cctx.fill();
+  requestAnimationFrame(drawCat);
+}
+drawCat();
+
+// ── UI HELPERS ──
+function setBadge(cls,txt){const el=document.getElementById('phasePill');el.className=cls==='battle'?'battle':cls==='boss'?'boss':'';el.textContent=txt;}
+function setTimer(t,mode){
+  document.getElementById('timerNum').textContent=t;
+  document.getElementById('timerNum').className=t<=10?'danger':'';
+  const max=mode==='join'?30:mode==='boss'?40:60;
+  document.getElementById('timerFill').style.width=Math.max(0,t/max)*100+'%';
+  document.getElementById('timerFill').style.background=t<=10?'linear-gradient(90deg,#ff2244,#ff6b1a)':'linear-gradient(90deg,#00d4ff,#00ff88)';
+}
+function updA(){document.getElementById('aCnt').textContent=G.players.filter(p=>p.alive&&!p.falling).length;}
+
+function updLB(){
+  const s=Object.values(G.lb).sort((a,b)=>b.w-a.w).slice(0,4);
+  const el=document.getElementById('lbList');el.innerHTML='';
+  if(s.length===0){
+    el.innerHTML='<div style="color:var(--muted);font-size:11px;font-family:\'JetBrains Mono\',monospace;text-align:center;padding:20px 0;letter-spacing:1px">— No winners yet —</div>';
+    return;
+  }
+  const medals=['🥇','🥈','🥉','4'];
+  const cls=['r1','r2','r3',''];
+  s.forEach((e,i)=>{
+    const row=document.createElement('div');row.className='lbRow '+(cls[i]||'');
+    const imgEl=document.createElement('img');imgEl.className='lbFlagImg';
+    imgEl.src=CDN+(e.c.c||'un')+'.svg';
+    const fb=document.createElement('span');fb.className='lbFlagFb';fb.style.display='none';fb.textContent=e.c.e;
+    imgEl.onerror=()=>{imgEl.style.display='none';fb.style.display='block';};
+    row.innerHTML=`<span class="lbRank">${medals[i]||i+1}</span>`;
+    row.appendChild(imgEl);row.appendChild(fb);
+    // Show player name, not country name
+    const nm=document.createElement('span');nm.className='lbName';
+    nm.textContent=e.player||e.c.n;
+    const wn=document.createElement('span');wn.className='lbWins';wn.textContent=e.w+'W';
+    row.appendChild(nm);row.appendChild(wn);
+    el.appendChild(row);
+  });
+}
+
+function setSpot(p){
+  const wrap=document.getElementById('sImgWrap');
+  if(!p){
+    wrap.innerHTML='<span id="sFlag">🏳️</span>';
+    document.getElementById('sName').textContent='Waiting...';
+    document.getElementById('sCnt').textContent='— country —';
+    return;
+  }
+  const img=gImg(p.country.c);
+  if(img&&img.complete&&img.naturalWidth>0){
+    wrap.innerHTML=`<img src="${CDN+p.country.c+'.svg'}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.parentNode.innerHTML='<span style=font-size:32px>${p.country.e}</span>'"/>`;
+  } else {
+    wrap.innerHTML=`<span style="font-size:32px">${p.country.e}</span>`;
+  }
+  document.getElementById('sName').textContent=p.name;
+  document.getElementById('sCnt').textContent=p.country.n;
+}
+
+function addElimUI(p){
+  const row=document.getElementById('eR');
+  const item=document.createElement('div');item.className='ei';
+  const ef=document.createElement('div');ef.className='ef';
+  if(p.country.c){
+    const img=document.createElement('img');
+    img.src=CDN+p.country.c+'.svg';
+    img.onerror=()=>{img.replaceWith(Object.assign(document.createElement('span'),{textContent:p.country.e}));};
+    ef.appendChild(img);
+  } else {
+    ef.innerHTML=`<span>${p.country.e}</span>`;
+  }
+  const en=document.createElement('div');en.className='en';en.textContent=p.name.slice(0,8);
+  item.appendChild(ef);item.appendChild(en);
+  row.appendChild(item);row.scrollTop=row.scrollHeight;
+}
+
+
+function showWinner(w){
+  const fw=document.getElementById('wFlagWrap');
+  const ff=document.getElementById('wFlagFb');
+  if(w.country.c){
+    fw.style.display='block';ff.style.display='none';
+    document.getElementById('wFlagImg').src=CDN+w.country.c+'.svg';
+    document.getElementById('wFlagImg').onerror=()=>{fw.style.display='none';ff.style.display='block';ff.textContent=w.country.e;};
+  } else {
+    fw.style.display='none';ff.style.display='block';ff.textContent=w.country.e;
+  }
+  document.getElementById('wCo').textContent=w.country.n;
+  document.getElementById('wUsr').textContent=w.name;
+  document.getElementById('wUsrCard').textContent=w.name;
+
+  // All-time leader
+  const top=Object.values(G.lb).sort((a,b)=>b.w-a.w)[0];
+  document.getElementById('wTNm').textContent=top?(top.player||top.c.n):w.name;
+  document.getElementById('wTWn').textContent=(top?top.w:1)+' wins';
+
+  document.getElementById('wO').classList.add('show');
+  // 7s countdown — enough time for the winner speech to fully play
+  let cd=7;document.getElementById('wCd').textContent=cd;
+  const iv=setInterval(()=>{
+    cd--;
+    document.getElementById('wCd').textContent=cd;
+    if(cd<=0){clearInterval(iv);nextRound();}
+  },1000);
+}
+
+function showBossWarn(cb){
+  document.getElementById('bWrn').classList.add('show');doFlash();speak(VL.bossWarn);
+  postHost('🦍 BOSS ROUND! All players fight the Gorilla Boss together!');
+  setTimeout(()=>{document.getElementById('bWrn').classList.remove('show');cb();},3000);
+}
+function doFlash(){const f=document.getElementById('bf');f.style.display='block';setTimeout(()=>f.style.display='none',220);setTimeout(()=>{f.style.display='block';setTimeout(()=>f.style.display='none',220);},380);}
+function showPUA(lbl){const el=document.getElementById('puA');el.textContent=lbl;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500);}
+function postHost(msg){
+  // Clear the queue and interrupt any current typewriter for fresh message
+  G.hQ=[msg];
+  if(hTyperIv){clearInterval(hTyperIv);hTyperIv=null;}
+  if(G.hTimeout){clearTimeout(G.hTimeout);G.hTimeout=null;}
+  nextHMsg();
+}
+let hTyperIv=null;
+function nextHMsg(){
+  if(!G.hQ.length){G.hTimeout=null;return;}
+  // Always cancel any running typewriter first
+  if(hTyperIv){clearInterval(hTyperIv);hTyperIv=null;}
+  clearTimeout(G.hTimeout);G.hTimeout=null;
+  const msg=G.hQ.shift();
+  const el=document.getElementById('hTxt');
+  el.textContent='';
+  let i=0;
+  hTyperIv=setInterval(()=>{
+    el.textContent+=msg[i++];
+    if(i>=msg.length){
+      clearInterval(hTyperIv);hTyperIv=null;
+      G.hTimeout=setTimeout(nextHMsg,3000);
+    }
+  },32);
+}
+function clearIvs(){clearInterval(G.tIv);clearInterval(G.btIv);clearInterval(G.puIv);}
+
+let ac;
+function beep(f,d,t='sine',v=.08){try{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.start();o.stop(ac.currentTime+d);}catch(e){}}
+
+// ── COUNTRY MATCHING (real viewers) ──
+const ALIASES={
+  "🇮🇳":"India","🇺🇸":"USA","🇧🇷":"Brazil","🇮🇩":"Indonesia","🇵🇭":"Philippines","🇳🇵":"Nepal","🇵🇰":"Pakistan","🇬🇧":"UK",
+  "🇧🇩":"Bangladesh","🇳🇬":"Nigeria","🇯🇵":"Japan","🇨🇳":"China","🇩🇪":"Germany","🇫🇷":"France","🇨🇦":"Canada","🇦🇺":"Australia",
+  "🇲🇽":"Mexico","🇷🇺":"Russia","🇰🇷":"S.Korea","🇹🇷":"Turkey","🇪🇬":"Egypt","🇺🇦":"Ukraine","🇵🇱":"Poland","🇸🇪":"Sweden",
+  "🇦🇷":"Argentina","🇨🇴":"Colombia","🇻🇳":"Vietnam","🇹🇭":"Thailand","🇲🇾":"Malaysia","🇮🇹":"Italy","🇪🇸":"Spain","🇬🇭":"Ghana",
+  "🇰🇪":"Kenya","🇲🇦":"Morocco","🇿🇦":"S.Africa","🇬🇷":"Greece","🇵🇹":"Portugal","🇷🇴":"Romania","🇩🇰":"Denmark","🇳🇴":"Norway",
+  "🇫🇮":"Finland","🇮🇪":"Ireland","🇯🇲":"Jamaica","🇵🇪":"Peru","🇨🇱":"Chile","🇻🇪":"Venezuela","🇪🇹":"Ethiopia","🇮🇷":"Iran",
+  "🇭🇷":"Croatia","🇷🇸":"Serbia","🇭🇺":"Hungary","🇧🇴":"Bolivia","🇲🇳":"Mongolia","🇰🇭":"Cambodia","🇱🇰":"SriLanka","🇳🇿":"NewZealand",
+  "united states":"USA","united states of america":"USA","america":"USA","us":"USA",
+  "united kingdom":"UK","england":"UK","britain":"UK","great britain":"UK",
+  "south korea":"S.Korea","korea":"S.Korea",
+  "south africa":"S.Africa","rsa":"S.Africa",
+  "new zealand":"NewZealand","nz":"NewZealand","kiwi":"NewZealand",
+  "sri lanka":"SriLanka","ceylon":"SriLanka",
+  "ph":"Philippines","phils":"Philippines","pilipinas":"Philippines","pinas":"Philippines","pinoy":"Philippines",
+  "indo":"Indonesia","indon":"Indonesia",
+  "ind":"India","pak":"Pakistan","bd":"Bangladesh","aus":"Australia",
+  "ger":"Germany","fra":"France","jpn":"Japan","bra":"Brazil","mex":"Mexico",
+  "arg":"Argentina","col":"Colombia","ven":"Venezuela","can":"Canada","ire":"Ireland",
+};
+function parseCountry(msg){
+  const t=msg.trim();
+  // 1. Flag emoji
+  for(const[em,name]of Object.entries(ALIASES)){
+    if(em.length===2&&t.includes(em)){const f=C.find(c=>c.n===name);if(f)return f;}
+  }
+  const lower=t.toLowerCase().replace(/[^a-z0-9\s]/g,' ').trim();
+  // 2. Text aliases
+  for(const[alias,name]of Object.entries(ALIASES)){
+    if(alias.length>2&&lower.includes(alias)){const f=C.find(c=>c.n===name);if(f)return f;}
+  }
+  // 3. Direct country name
+  const byName=C.find(c=>lower.includes(c.n.toLowerCase()));if(byName)return byName;
+  // 4. Single word
+  for(const word of lower.split(/\s+/)){
+    if(word.length<3)continue;
+    const f=C.find(c=>c.n.toLowerCase()===word);if(f)return f;
+  }
+  return null;
+}
+
+window.addChatPlayer=function(username,message){
+  const country=parseCountry(message);
+  if(!country)return false;
+  if(G.phase==='joining'){
+    if(G.players.find(p=>p.name.toLowerCase()===username.toLowerCase()))return false;
+    if(G.players.length>=60)return false;
+    G.players.push(mkP(country,username,false));updA();
+    postHost(`${country.e} ${username} joined as ${country.n}!`);return true;
+  }
+  const alreadyQ=chatQueue.find(q=>q.username.toLowerCase()===username.toLowerCase());
+  if(!alreadyQ)chatQueue.push({username,country});
+  return false;
+};
+
+// ── YOUTUBE ──
+let YT_API_KEY='';
+let ytChatId='',ytNextPage='',ytPollTimer=null,ytConnected=false,ytSeenIds=new Set();
+function ytSetStatus(msg,cls){const el=document.getElementById('ytStatus');el.textContent=msg;el.className=cls||'';}
+function ytParseId(raw){
+  raw=raw.trim();
+  const patterns=[/[?&]v=([a-zA-Z0-9_-]{11})/,/youtu\.be\/([a-zA-Z0-9_-]{11})/,/\/live\/([a-zA-Z0-9_-]{11})/,/\/shorts\/([a-zA-Z0-9_-]{11})/];
+  for(const p of patterns){const m=raw.match(p);if(m)return m[1];}
+  if(/^[a-zA-Z0-9_-]{11}$/.test(raw))return raw;
+  return null;
+}
+async function ytFetchChatId(videoId){
+  const url=`https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}&key=${YT_API_KEY}`;
+  let res,data;
+  try{res=await fetch(url);data=await res.json();}catch(e){throw new Error('Network error — run via python server.py, not file://');}
+  if(data.error){const c=data.error.code,m=data.error.message||'';
+    if(c===400)throw new Error('Invalid API key — check it is correct.');
+    if(c===403){if(m.includes('quota'))throw new Error('API quota exceeded. Try again tomorrow or use a new key.');if(m.includes('key'))throw new Error('API key not authorised — enable YouTube Data API v3 in Google Console.');}
+    throw new Error(m||'YouTube API error '+c);}
+  if(!data.items||!data.items.length)throw new Error('Video not found. Check the ID is correct and stream is public/unlisted.');
+  const d=data.items[0].liveStreamingDetails;
+  if(!d)throw new Error('This video is not a live stream. Start streaming first.');
+  if(d.scheduledStartTime&&!d.actualStartTime)throw new Error('Stream is scheduled but not live yet. Start the stream first.');
+  if(d.actualEndTime)throw new Error('This stream has ended. Start a new live stream.');
+  if(!d.activeLiveChatId)throw new Error('No active live chat — make sure your stream is LIVE and chat is enabled.');
+  return d.activeLiveChatId;
+}
+async function pollYTChat(){
+  if(!ytChatId||!ytConnected)return;
+  try{
+    let url=`https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${ytChatId}&part=snippet,authorDetails&key=${YT_API_KEY}&maxResults=200`;
+    if(ytNextPage)url+=`&pageToken=${ytNextPage}`;
+    const res=await fetch(url);const data=await res.json();
+    if(data.error){if(data.error.code===403||data.error.code===404){ytConnected=false;const b=document.getElementById('ytBadge');b.textContent='● CHAT ENDED';b.className='off';return;}ytPollTimer=setTimeout(pollYTChat,10000);return;}
+    ytNextPage=data.nextPageToken||'';
+    (data.items||[]).forEach(item=>{if(ytSeenIds.has(item.id))return;ytSeenIds.add(item.id);window.addChatPlayer(item.authorDetails.displayName,item.snippet.displayMessage);});
+    ytPollTimer=setTimeout(pollYTChat,Math.max(3000,data.pollingIntervalMillis||5000));
+  }catch(e){ytPollTimer=setTimeout(pollYTChat,8000);}
+}
+async function ytConnect(){
+  const raw=document.getElementById('ytVidInput').value.trim();
+  const keyVal=document.getElementById('ytApiKey').value.trim();
+  if(!keyVal){ytSetStatus('⚠ Please enter your YouTube API Key','err');return;}
+  if(!raw){ytSetStatus('⚠ Please enter your Video ID or URL','err');return;}
+  const videoId=ytParseId(raw);
+  if(!videoId){ytSetStatus('⚠ Could not find a valid 11-character Video ID in that input','err');return;}
+  YT_API_KEY=keyVal;
+  ytSetStatus('🔄 Connecting...','loading');
+  document.getElementById('ytConnectBtn').disabled=true;
+  try{
+    ytChatId=await ytFetchChatId(videoId);
+    ytConnected=true;ytSeenIds=new Set();ytNextPage='';
+    localStorage.setItem('yt_video_id',videoId);localStorage.setItem('yt_api_key',keyVal);
+    ytSetStatus('✅ Connected! Loading game...','ok');
+    const b=document.getElementById('ytBadge');b.textContent='● YT LIVE';b.className='on';
+    setTimeout(()=>{document.getElementById('ytSetup').style.display='none';pollYTChat();bootGame();},900);
+  }catch(e){ytSetStatus('✗ '+e.message,'err');document.getElementById('ytConnectBtn').disabled=false;}
+}
+function ytSkip(){
+  document.getElementById('ytSetup').style.display='none';
+  const b=document.getElementById('ytBadge');b.textContent='● BOTS ONLY';b.className='off';
+  bootGame();
+}
+
+function bootGame(){
+  resize();
+  G.lb={};
+  updLB();
+  document.getElementById('sDots').style.display='none';
+
+  // Force load voices on user gesture — critical for BlueStacks/Android Chrome
+  // Android won't expose voices until after a user interaction
+  _loadVoices();
+  if(window.speechSynthesis){
+    // Warm up the speech engine with a silent utterance
+    const warmup=new SpeechSynthesisUtterance(' ');
+    warmup.volume=0;warmup.rate=2;
+    window.speechSynthesis.speak(warmup);
+    // Load voices again after warmup
+    setTimeout(()=>{_loadVoices();},500);
+  }
+
+  startJoin();
+}
+
+resize();
+// Restore only API credentials, never game state
+const savedVid=localStorage.getItem('yt_video_id');
+const savedKey=localStorage.getItem('yt_api_key');
+if(savedVid)document.getElementById('ytVidInput').value=savedVid;
+if(savedKey)document.getElementById('ytApiKey').value=savedKey;
+</script>
+</body>
+</html>
